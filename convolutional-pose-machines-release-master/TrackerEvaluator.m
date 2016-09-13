@@ -117,8 +117,8 @@ classdef TrackerEvaluator < handle
         
         %% Continuing Live Code.
         function trackingResults =  performSimpleMDNetTracking(videoPath, initPos, posWidth, posHeight, net, img_files, trackingDisplay)
-            img_files = fulfile(videoPath, img_files);
-            addpath(genpath('/home/felix/BGU_Computer_Vision_thesis/Codes/MDNet-master'));
+            img_files = fullfile(videoPath, img_files);
+            addpath(genpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master'));
             posRect = [initPos(1)- posWidth/2 initPos(2)-posHeight/2 posWidth posHeight];
             trackingResults = mdnet_run(img_files, posRect, net, trackingDisplay);
             trackingResults = trackingResults(:, 1:2);
