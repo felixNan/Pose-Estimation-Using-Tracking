@@ -45,9 +45,9 @@ if (doRunAlg)
     poseAlgParams.relativeRadius = 0.05;
     poseAlgParams.peakProbabiltyThresh = 0.35;
     poseAlgParams.probabiltyInRadiusThresh = 0.27;
-    poseAlgParams.doUseMDNet = false;
-    poseAlgParams.minFrames2Track =  5;
-    [algResults, isConfidentVectors, trackingSpans] = jointsAlgManager.poseEstimationUsingTrackingAlg(poseAlgParams, heatMapCellArray, 8, videoPath, true);
+    poseAlgParams.doUseMDNet = true;
+    poseAlgParams.minFrames2Track =  0;
+    [algResults, isConfidentVectors, trackingSpans] = jointsAlgManager.poseEstimationUsingTrackingAlg(poseAlgParams, heatMapCellArray, 8, videoPath, false);
 end
 
 

@@ -3,9 +3,9 @@ classdef TrackerEvaluator < handle
     methods (Static)
         function resultsPerJoint = runPerJointMDnetOnVideo(kinectDateVector)
             [jointMatFileName, resultFileName, videoPath] = TrackerEvaluator.createFileNamesFromDateVector(kinectDateVector, false);
-            addpath(genpath('/home/felix/BGU_Computer_Vision_thesis/Codes/MDNet-master'));
             load(jointMatFileName);
             [img_files, filenums] = TrackerEvaluator.retrieveFileInformation(videoPath);
+            TrackerEvaluator.addAllMDNetPaths();
             img_files = fullfile(videoPath, img_files);
             posWidth = 50;
             posHeight = 50;
@@ -15,7 +15,7 @@ classdef TrackerEvaluator < handle
             pos  = kinectHandler.blobJointsInKinectCoords(pos, [256 256], [480 640]);
             % pos = [pos(:, 2) pos(:, 1)];
             resultsPerJoint = cell(7,1);
-            net = fullfile('/home/felix/BGU_Computer_Vision_thesis/Codes/MDNet-master','models','mdnet_vot-otb.mat');
+            net = fullfile('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master','models','mdnet_vot-otb.mat');
             for k = 1:length(resultsPerJoint)
                 initPos = pos(k,:);
                 posRect = [initPos(1)- posWidth/2 initPos(2)-posHeight/2 posWidth posHeight];
@@ -118,7 +118,7 @@ classdef TrackerEvaluator < handle
         %% Continuing Live Code.
         function trackingResults =  performSimpleMDNetTracking(videoPath, initPos, posWidth, posHeight, net, img_files, trackingDisplay)
             img_files = fullfile(videoPath, img_files);
-            addpath(genpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master'));
+            TrackerEvaluator.addAllMDNetPaths();
             posRect = [initPos(1)- posWidth/2 initPos(2)-posHeight/2 posWidth posHeight];
             trackingResults = mdnet_run(img_files, posRect, net, trackingDisplay);
             trackingResults = trackingResults(:, 1:2);
@@ -179,11 +179,15 @@ classdef TrackerEvaluator < handle
             for k = 1:length(resultsPerJointMDNet)
                 perJointMat = resultsPerJoint{k};
                 perJointMat = [perJointMat(:,1) + perJointMat(:,3)/2  perJointMat(:,2) + perJointMat(:,4)/2];
-                resultsPerJointMDNet{k} = perJointMat;
+                resultaddAllMDNetPathssPerJointMDNet{k} = perJointMat;
             end
         end
         
-        
+        function addAllMDNetPaths()
+            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/pretraining');
+            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/tracking');
+            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/utils');
+        end
         
         
     end
