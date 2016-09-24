@@ -98,7 +98,7 @@ classdef TrackerEvaluator < handle
             load(trackerMatFileName, 'resultsPerJoint');
             
             if (isMDnetTracker)
-                resultsPerJoint = TrackerEvaluator.convertMDNetResult2JointResultsFormat(resultsPerJoint); %#ok<USENS>
+                resultsPerJoint = TrackerEvaluator.convertMDNetResult2JointResultsFormat(resultsPerJoint);
             end
             
             jointListsKinect = kinectHandler.getOnlyRelevantKinectJoints(videoPath, startIndex, jointLists);
