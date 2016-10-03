@@ -2,9 +2,13 @@ clear ;
 close all;
 clc;
 
-dateVector = [30 5 16 0 38];
+dateVectors = [23 5 16 2 2; 25 5 16 0 53; 25 5 16 0 59; 29 7 16 18 0; 29 7 16 18 2; 30 5 16 0 38];
+
+for k = 1: size(dateVectors, 1)
+dateVector = dateVectors(k,:);
 relevantJoints = 8;
 doRunAlg = true;
+TrackerEvaluator.prepareMDNet4Work();
 
 dateStringFolder = sprintf('_%02d', dateVector);
 dateStringMat = sprintf('%02d_', dateVector);
@@ -88,4 +92,5 @@ jointsAlgManager.createVideoFromJointImages(jointImages, outputVideoFileName, st
 
 if (doRunAlg)
     jointsAlgManager.createVideoFromJointImages(jointImagesAlg, outputVideoFileNameAlg, startIndex, 10);
+end
 end

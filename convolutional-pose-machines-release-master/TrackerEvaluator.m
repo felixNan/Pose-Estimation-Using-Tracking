@@ -5,7 +5,6 @@ classdef TrackerEvaluator < handle
             [jointMatFileName, resultFileName, videoPath] = TrackerEvaluator.createFileNamesFromDateVector(kinectDateVector, false);
             load(jointMatFileName);
             [img_files, filenums] = TrackerEvaluator.retrieveFileInformation(videoPath);
-            TrackerEvaluator.addAllMDNetPaths();
             img_files = fullfile(videoPath, img_files);
             posWidth = 50;
             posHeight = 50;
@@ -118,7 +117,6 @@ classdef TrackerEvaluator < handle
         %% Continuing Live Code.
         function trackingResults =  performSimpleMDNetTracking(videoPath, initPos, posWidth, posHeight, net, img_files, trackingDisplay)
             img_files = fullfile(videoPath, img_files);
-            TrackerEvaluator.addAllMDNetPaths();
             posRect = [initPos(1)- posWidth/2 initPos(2)-posHeight/2 posWidth posHeight];
             trackingResults = mdnet_run(img_files, posRect, net, trackingDisplay);
             trackingResults = trackingResults(:, 1:2);
@@ -145,6 +143,16 @@ classdef TrackerEvaluator < handle
             [kcfResults, ~] = tracker(videoPath, img_files, initPos, [posWidth posHeight], ...
                 padding, kernel, lambdaq, output_sigma_factor, interp_factor, cell_size, features, trackingDisplay);
             
+        end
+        
+         function prepareMDNet4Work()
+			origFolder = pwd;
+			cd('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/');
+			setup_mdnet;
+			cd(origFolder);
+            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/pretraining');
+            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/tracking');
+            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/utils');
         end
         
         
@@ -183,11 +191,7 @@ classdef TrackerEvaluator < handle
             end
         end
         
-        function addAllMDNetPaths()
-            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/pretraining');
-            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/tracking');
-            addpath('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master/utils');
-        end
+       
         
         
     end
