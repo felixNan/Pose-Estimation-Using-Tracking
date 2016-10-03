@@ -18,6 +18,7 @@ videoPath = ['kinectVideoFrames'  dateStringFolder filesep];
 jointMatPath = ['kinectJointsData'  dateStringMat '.mat'];
 outputVideoFileName = [ 'outputVideo' dateStringMat '.avi'];
 outputVideoFileNameAlg = [ 'outputVideoAlg' dateStringMat '.avi'];
+metricsMatFile = ['metricResults' dateStringMat '.mat'];
 
 %% Extract heatMap and prediction from folders.
 heatMapDirInfo = dir([heatMapfolderName '/*.mat']);
@@ -93,4 +94,7 @@ jointsAlgManager.createVideoFromJointImages(jointImages, outputVideoFileName, st
 if (doRunAlg)
     jointsAlgManager.createVideoFromJointImages(jointImagesAlg, outputVideoFileNameAlg, startIndex, 10);
 end
+
+save(metricsMatFile, 'jointImagesAlg', 'jointImages',  'cpmJointMetricTracking', 'cpmJointMetric'); %saving separate mat-file for each date vector
+
 end
