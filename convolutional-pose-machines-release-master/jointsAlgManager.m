@@ -53,14 +53,40 @@ classdef jointsAlgManager < handle
         end
         
         
+        function [isConfidentVector, peakProbabilities, probabilitiesInRadius] = obtainConfidence4VideoConv(heatmapCellArray, confidenceAlgParams, jointNumber, startIndx)
+      
+			relativeRadius = confidenceAlgParams.relativeRadius;
+			peakProbabiltyThresh = confidenceAlgParams.peakProbabiltyThresh;
+			probabiltyInRadiusThresh = confidenceAlgParams.probabiltyInRadiusThresh;
+			avergingWindowSize = confidenceAlgParams.avergingWindowSize;
+			confidenceThresh = confidenceAlgParams.confidenceThresh;
+      
+			numOfFrames = length(heatmapCellArray);
+			avgWindow = ones(avergingWindowSize, 1)/avergingWindowSize;
+			[isConfidentVector, peakProbabilities, probabilitiesInRadius] = deal(zeros(numOfFrames, 1));
+			for k = startIndx:numOfFrames
+				heatmapImages = heatmapCellArray{k};
+				heatmapImage = heatmapImages(: ,: ,jointNumber);
+                [~ , peakProbabilities(k), probabilitiesInRadius(k)] = jointsAlgManager.checkIfConfidentJoint(heatmapImage, relativeRadius, peakProbabiltyThresh, probabiltyInRadiusThresh);
+			end
+      
+			peakProbabilitiesAverages = conv(peakProbabilities, avgWindow, 'same');
+			probabilitiesInRadiusAverages =  conv(probabilitiesInRadius, avgWindow,'same');
+			isConfidentVector(startIndx : avergingWindowSize + startIndx) = 1;
+			logIndicesOfConfidentFrames = peakProbabilities > confidenceThresh * peakProbabilitiesAverages & probabilitiesInRadius > confidenceThresh * probabilitiesInRadiusAverages;
+			isConfidentVector(avergingWindowSize + startIndx + 1:end) =  logIndicesOfConfidentFrames(avergingWindowSize + startIndx + 1:end); %first part is thresh because of the convolution.
+      
+		end
+        
+        
         function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBlindly(heatmapImages ,img_files ,poseAlgParams ,jointNumber, videoPath, startIndx)
-            relativeRadius  = poseAlgParams.relativeRadius;
-            peakProbabiltyThresh = poseAlgParams.peakProbabiltyThresh;
-            probabiltyInRadiusThresh = poseAlgParams.probabiltyInRadiusThresh;
+            
+            relativeRadius = poseAlgParams.relativeRadius;
             doUseMDNet = poseAlgParams.doUseMDNet;
             minFrames2Track = poseAlgParams.minFrames2Track;
+            
             trackingSpanLength = [];
-            isConfidentVector = jointsAlgManager.obtainConfidence4Video(heatmapImages, relativeRadius, peakProbabiltyThresh, probabiltyInRadiusThresh, jointNumber);
+            isConfidentVector = jointsAlgManager.obtainConfidence4VideoConv(heatmapImages, poseAlgParams, jointNumber, startIndx);
             if (doUseMDNet)
                 net = fullfile('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master','models','mdnet_vot-otb_cpu.mat');
             end
@@ -93,15 +119,14 @@ classdef jointsAlgManager < handle
             end
         end
         
-        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBetweenConfidentFrames(heatmapImages ,img_files ,poseAlgParams ,jointNumber, videoPath, startIndx)
+        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBetweenConfidentFrames(heatmapImages, img_files, poseAlgParams, jointNumber, videoPath, startIndx)
             
-            relativeRadius  = poseAlgParams.relativeRadius;
-            peakProbabiltyThresh = poseAlgParams.peakProbabiltyThresh;
-            probabiltyInRadiusThresh = poseAlgParams.probabiltyInRadiusThresh;
+            relativeRadius = poseAlgParams.relativeRadius;
             doUseMDNet = poseAlgParams.doUseMDNet;
             minFrames2Track = poseAlgParams.minFrames2Track;
+            
             trackingSpanLength = [];
-            isConfidentVector = jointsAlgManager.obtainConfidence4Video(heatmapImages, relativeRadius, peakProbabiltyThresh, probabiltyInRadiusThresh, jointNumber);
+            isConfidentVector = jointsAlgManager.obtainConfidence4VideoConv(heatmapImages, poseAlgParams, jointNumber, startIndx);
             if (doUseMDNet)
                 net = fullfile('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master','models','mdnet_vot-otb_cpu.mat');
             end
