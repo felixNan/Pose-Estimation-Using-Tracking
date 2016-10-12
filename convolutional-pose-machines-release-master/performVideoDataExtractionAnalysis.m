@@ -6,7 +6,7 @@ clc;
 %dateVectors = [23 5 16 2 2; 25 5 16 0 53; 25 5 16 0 59; 29 7 16 18 0; 29 7 16 18 2; 30 5 16 0 38];
 %avgWindowSizes = [5; 10; 15; 20];
 dateVectors = [25 5 16 0 53];
-avgWindowSize = 15;
+avgWindowSizes = 10;
 
 for iWindowSize = 1:length(avgWindowSizes)
     for k = 1: size(dateVectors, 1)
