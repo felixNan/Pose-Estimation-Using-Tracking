@@ -22,7 +22,12 @@ classdef jointsAlgManager < handle
             
         end
         
-        function [isConfidentVector, peakProbabilities, probabilitiesInRadius] = obtainConfidence4Video(heatmapCellArray, relativeRadius, peakProbabiltyThresh, probabiltyInRadiusThresh, jointNumber)
+        function [isConfidentVector, peakProbabilities, probabilitiesInRadius] = obtainConfidence4Video(heatmapCellArray, confidenceAlgParams, jointNumber)
+            
+            relativeRadius = confidenceAlgParams.relativeRadius;
+			peakProbabiltyThresh = confidenceAlgParams.peakProbabiltyThresh;
+			probabiltyInRadiusThresh = confidenceAlgParams.probabiltyInRadiusThresh;
+            
             numOfFrames = length(heatmapCellArray);
             [isConfidentVector, peakProbabilities, probabilitiesInRadius] = deal(zeros(numOfFrames, 1));
             for k = 3:numOfFrames
@@ -86,7 +91,7 @@ classdef jointsAlgManager < handle
             minFrames2Track = poseAlgParams.minFrames2Track;
             
             trackingSpanLength = [];
-            isConfidentVector = jointsAlgManager.obtainConfidence4VideoConv(heatmapImages, poseAlgParams, jointNumber, startIndx);
+            isConfidentVector = jointsAlgManager.obtainConfidence4Video(heatmapImages, poseAlgParams, jointNumber);
             if (doUseMDNet)
                 net = fullfile('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master','models','mdnet_vot-otb_cpu.mat');
             end
@@ -126,7 +131,7 @@ classdef jointsAlgManager < handle
             minFrames2Track = poseAlgParams.minFrames2Track;
             
             trackingSpanLength = [];
-            isConfidentVector = jointsAlgManager.obtainConfidence4VideoConv(heatmapImages, poseAlgParams, jointNumber, startIndx);
+            isConfidentVector = jointsAlgManager.obtainConfidence4Video(heatmapImages, poseAlgParams, jointNumber);
             if (doUseMDNet)
                 net = fullfile('/home/felix/BGU_Computer_Vision_thesis/Codes/Pose-Estimation-Using-Tracking/MDNet-master','models','mdnet_vot-otb_cpu.mat');
             end
