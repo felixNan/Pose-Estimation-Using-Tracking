@@ -37,7 +37,7 @@ classdef jointsAlgManager < handle
             end
         end
         
-        function [algResults, isConfidentVectors, trackingSpans] = poseEstimationUsingTrackingAlg(poseAlgParams, heatmapImages, numberOfJoints, videoPath, isBlind, startIndx)
+        function [algResults, isConfidentVectors, trackingSpans] = poseEstimationUsingTrackingAlg(poseAlgParams, heatmapImages, numberOfJoints, videoPath, isBlind, startIndx, posSize4Tracker)
             %gets results for all joints.
             imgFiles = TrackerEvaluator.retrieveFileInformation(videoPath);
             numOfImages = length(imgFiles);
@@ -46,9 +46,9 @@ classdef jointsAlgManager < handle
             
             for m = 1 : numberOfJoints
                 if (isBlind)
-                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBlindly(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx);
+                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBlindly(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx, posSize4Tracker);
                 else
-                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBetweenConfidentFrames(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx);
+                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBetweenConfidentFrames(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx, posSize4Tracker);
                 end
                 fprintf('finished tracking Joint %d\n', m);
             end
@@ -84,7 +84,7 @@ classdef jointsAlgManager < handle
 		end
         
         
-        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBlindly(heatmapImages ,img_files ,poseAlgParams ,jointNumber, videoPath, startIndx)
+        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBlindly(heatmapImages ,img_files ,poseAlgParams ,jointNumber, videoPath, startIndx, posSize4Tracker)
             
             relativeRadius = poseAlgParams.relativeRadius;
             doUseMDNet = poseAlgParams.doUseMDNet;
@@ -109,7 +109,7 @@ classdef jointsAlgManager < handle
                 trackingSpanLength = [trackingSpanLength ; length(trackingSpan)]; % not really needed, used just for gathering info on actual number of tracked images.
                 currHeatMapImage = heatmapImages{currentIndex};
                 initPos =  jointsAlgManager.getJointLocationFromHeatMap(currHeatMapImage, jointNumber) ;
-                posWidth = 2 * relativeRadius * min(size(currHeatMapImage(:, :, jointNumber)));
+                posWidth = posSize4Tracker * min(size(currHeatMapImage(:, :, jointNumber)));
                 posHeight = posWidth;
                 relevantImgFiles = img_files(trackingSpan);
                 if (length(relevantImgFiles) > 1)
@@ -124,7 +124,7 @@ classdef jointsAlgManager < handle
             end
         end
         
-        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBetweenConfidentFrames(heatmapImages, img_files, poseAlgParams, jointNumber, videoPath, startIndx)
+        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBetweenConfidentFrames(heatmapImages, img_files, poseAlgParams, jointNumber, videoPath, startIndx, posSize4Tracker)
             
             relativeRadius = poseAlgParams.relativeRadius;
             doUseMDNet = poseAlgParams.doUseMDNet;
@@ -155,7 +155,7 @@ classdef jointsAlgManager < handle
                 trackingSpanLength = [trackingSpanLength ; length(trackingSpan)]; % not really needed, used just for gathering info on actual number of tracked images.
                 currHeatMapImage = heatmapImages{currentConfidentIndex};
                 initPos =  jointsAlgManager.getJointLocationFromHeatMap(currHeatMapImage, jointNumber) ;
-                posWidth = 2 * relativeRadius * min(size(currHeatMapImage(:, :, jointNumber)));
+                posWidth = posSize4Tracker * min(size(currHeatMapImage(:, :, jointNumber)));
                 posHeight = posWidth;
                 relevantImgFiles = img_files(trackingSpan);
                 if (length(relevantImgFiles) > 1)
