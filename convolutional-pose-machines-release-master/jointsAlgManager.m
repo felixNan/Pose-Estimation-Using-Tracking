@@ -37,7 +37,7 @@ classdef jointsAlgManager < handle
             end
         end
         
-        function [algResults, isConfidentVectors, trackingSpans] = poseEstimationUsingTrackingAlg(poseAlgParams, heatmapImages, numberOfJoints, videoPath, isBlind, startIndx, posSize4Tracker)
+        function [algResults, isConfidentVectors, trackingSpans] = poseEstimationUsingTrackingAlg(poseAlgParams, heatmapImages, numberOfJoints, videoPath, isBlind, startIndx)
             %gets results for all joints.
             imgFiles = TrackerEvaluator.retrieveFileInformation(videoPath);
             numOfImages = length(imgFiles);
@@ -46,9 +46,9 @@ classdef jointsAlgManager < handle
             
             for m = 1 : numberOfJoints
                 if (isBlind)
-                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBlindly(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx, posSize4Tracker);
+                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBlindly(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx);
                 else
-                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBetweenConfidentFrames(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx, posSize4Tracker);
+                    [algResults{m}, isConfidentVectors(:, m), trackingSpans{m}]  = jointsAlgManager.estimateSingleJointBetweenConfidentFrames(heatmapImages, imgFiles, poseAlgParams, m, videoPath, startIndx);
                 end
                 fprintf('finished tracking Joint %d\n', m);
             end
@@ -89,6 +89,8 @@ classdef jointsAlgManager < handle
             relativeRadius = poseAlgParams.relativeRadius;
             doUseMDNet = poseAlgParams.doUseMDNet;
             minFrames2Track = poseAlgParams.minFrames2Track;
+            posSize4Tracker = poseAlgParams.posSize4Tracker;
+            
             
             trackingSpanLength = [];
             isConfidentVector = jointsAlgManager.obtainConfidence4Video(heatmapImages, poseAlgParams, jointNumber);
@@ -124,11 +126,12 @@ classdef jointsAlgManager < handle
             end
         end
         
-        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBetweenConfidentFrames(heatmapImages, img_files, poseAlgParams, jointNumber, videoPath, startIndx, posSize4Tracker)
+        function [perJointAlgResults, isConfidentVector, trackingSpanLength] = estimateSingleJointBetweenConfidentFrames(heatmapImages, img_files, poseAlgParams, jointNumber, videoPath, startIndx)
             
             relativeRadius = poseAlgParams.relativeRadius;
             doUseMDNet = poseAlgParams.doUseMDNet;
             minFrames2Track = poseAlgParams.minFrames2Track;
+            posSize4Tracker = poseAlgParams.posSize4Tracker;
             
             trackingSpanLength = [];
             isConfidentVector = jointsAlgManager.obtainConfidence4Video(heatmapImages, poseAlgParams, jointNumber);

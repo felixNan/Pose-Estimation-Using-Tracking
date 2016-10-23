@@ -63,7 +63,8 @@ for p = 1:length(posSizes4Tracker)
             poseAlgParams.confidenceThresh = 0.7;
             poseAlgParams.doUseMDNet = true;
             poseAlgParams.minFrames2Track =  0;
-            [algResults, isConfidentVectors, trackingSpans] = jointsAlgManager.poseEstimationUsingTrackingAlg(poseAlgParams, heatMapCellArray, 8, videoPath, false, 3, posSizes4Tracker(p));
+            poseAlgParams.posSize4Tracker = posSizes4Tracker(p);
+            [algResults, isConfidentVectors, trackingSpans] = jointsAlgManager.poseEstimationUsingTrackingAlg(poseAlgParams, heatMapCellArray, 8, videoPath, false, 3);
         end
         
         
