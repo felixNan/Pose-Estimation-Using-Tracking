@@ -7,7 +7,7 @@ function [net, poss, hardnegs] = mdnet_finetune_hnm(net,pos_data,neg_data,vararg
 %
 
 opts.useGpu = true;
-opts.conserveMemory = true ;
+opts.conserveMemory = false ;
 opts.sync = true ;
 
 opts.maxiter = 30;
@@ -22,17 +22,17 @@ opts.batchSize = 128;
 opts.batch_pos = 32;
 opts.batch_neg = 96;
 
-opts = vl_argparse(opts, varargin) ;
+opts = vl_argparse_old(opts, varargin) ;
 % -------------------------------------------------------------------------
 %                                                    Network initialization
 % -------------------------------------------------------------------------
 
 for i=1:numel(net.layers)
     if strcmp(net.layers{i}.type,'conv')
-        net.layers{i}.filtersMomentum = zeros(size(net.layers{i}.filters), ...
-            class(net.layers{i}.filters)) ;
-        net.layers{i}.biasesMomentum = zeros(size(net.layers{i}.biases), ...
-            class(net.layers{i}.biases)) ; %#ok<*ZEROLIKE>
+        net.layers{i}.filtersMomentum = zeros(size(net.layers{i}.weights{1}), ...
+            class(net.layers{i}.weights{1})) ;
+        net.layers{i}.biasesMomentum = zeros(size(net.layers{i}.weights{2}), ...
+            class(net.layers{i}.weights{2})) ; %#ok<*ZEROLIKE>
         
         if opts.useGpu
             net.layers{i}.filtersMomentum = gpuArray(net.layers{i}.filtersMomentum);
@@ -115,9 +115,8 @@ for t=1:opts.maxiter
         % backprop
         net.layers{end}.class = ones(opts.batchSize_hnm,1,'single') ;
         res = vl_simplenn(net, batch, [], res, ...
-            'disableDropout', true, ...
-            'conserveMemory', opts.conserveMemory, ...
-            'sync', opts.sync) ;
+            'mode', 'test', ...
+            'conserveMemory', opts.conserveMemory) ;
         score_hneg((h-1)*opts.batchSize_hnm+1:h*opts.batchSize_hnm) = ...
             squeeze(gather(res(end-1).x(1,1,2,:)));
     end
@@ -142,8 +141,7 @@ for t=1:opts.maxiter
     % backprop
     net.layers{end}.class = labels ;
     res = vl_simplenn(net, batch, one, res, ...
-        'conserveMemory', opts.conserveMemory, ...
-        'sync', opts.sync) ;
+        'conserveMemory', opts.conserveMemory) ;
     
     % gradient step
     for l=1:numel(net.layers)
@@ -152,17 +150,17 @@ for t=1:opts.maxiter
         net.layers{l}.filtersMomentum = ...
             opts.momentum * net.layers{l}.filtersMomentum ...
             - (lr * net.layers{l}.filtersLearningRate) * ...
-            (opts.weightDecay * net.layers{l}.filtersWeightDecay) * net.layers{l}.filters ...
+            (opts.weightDecay * net.layers{l}.filtersWeightDecay) * net.layers{l}.weights{1} ...
             - (lr * net.layers{l}.filtersLearningRate) / opts.batchSize * res(l).dzdw{1} ;
         
         net.layers{l}.biasesMomentum = ...
             opts.momentum * net.layers{l}.biasesMomentum ...
             - (lr * net.layers{l}.biasesLearningRate) * ....
-            (opts.weightDecay * net.layers{l}.biasesWeightDecay) * net.layers{l}.biases ...
+            (opts.weightDecay * net.layers{l}.biasesWeightDecay) * net.layers{l}.weights{2} ...
             - (lr * net.layers{l}.biasesLearningRate) / opts.batchSize * res(l).dzdw{2} ;
         
-        net.layers{l}.filters = net.layers{l}.filters + net.layers{l}.filtersMomentum ;
-        net.layers{l}.biases = net.layers{l}.biases + net.layers{l}.biasesMomentum ;
+        net.layers{l}.weights{1} = net.layers{l}.weights{1} + net.layers{l}.filtersMomentum ;
+        net.layers{l}.weights{2} = net.layers{l}.weights{2} + net.layers{l}.biasesMomentum ;
     end
     
     % print information
